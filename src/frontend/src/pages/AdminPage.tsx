@@ -25,7 +25,8 @@ import {
 } from "../hooks/useQueries";
 
 function LoginPrompt() {
-  const { login, isLoggingIn } = useInternetIdentity();
+  const { login, isLoggingIn, isInitializing } = useInternetIdentity();
+  const busy = isLoggingIn || isInitializing;
   return (
     <div
       className="flex-1 flex items-center justify-center"
@@ -82,13 +83,17 @@ function LoginPrompt() {
         </p>
         <Button
           onClick={login}
-          disabled={isLoggingIn}
+          disabled={busy}
           className="w-full py-3 font-semibold"
           style={{ background: "oklch(0.65 0.18 40)", color: "white" }}
           data-ocid="admin.submit_button"
         >
-          {isLoggingIn && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isLoggingIn ? "Kirjaudutaan..." : "Kirjaudu sisään"}
+          {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {isLoggingIn
+            ? "Kirjaudutaan..."
+            : isInitializing
+              ? "Ladataan..."
+              : "Kirjaudu sisään"}
         </Button>
       </motion.div>
     </div>
@@ -750,10 +755,17 @@ function EquipmentSection() {
 
 export default function AdminPage() {
   const { identity } = useInternetIdentity();
-  const { isFetching: actorFetching } = useActor();
+  const { actor, isFetching: actorFetching } = useActor();
   const { data: isAdmin, isFetching: adminFetching } = useIsAdmin();
 
-  const isChecking = !!identity && (actorFetching || adminFetching);
+  // isChecking is true while we have an identity but haven't resolved isAdmin yet:
+  // - actor is still loading, OR
+  // - admin query is in flight, OR
+  // - actor loaded but isAdmin hasn't resolved (brief gap between actor ready and query start)
+  const isChecking =
+    !!identity &&
+    (actorFetching || adminFetching || (!!actor && isAdmin === undefined));
+
   const showClaimPrompt = !!identity && !isChecking && isAdmin === false;
 
   return (

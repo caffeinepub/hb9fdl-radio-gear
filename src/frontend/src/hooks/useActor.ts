@@ -26,13 +26,25 @@ export function useActor() {
       };
 
       const actor = await createActorWithConfig(actorOptions);
-      const adminToken = getSecretParameter("caffeineAdminToken") || "";
-      await actor._initializeAccessControlWithSecret(adminToken);
+
+      // Only call _initializeAccessControlWithSecret when a Caffeine admin token
+      // is explicitly provided (e.g. during platform setup). Skip for normal
+      // Internet Identity logins to avoid registering the user as a plain `#user`
+      // and to prevent retries/hangs when the env variable is unavailable.
+      const adminToken = getSecretParameter("caffeineAdminToken");
+      if (adminToken) {
+        try {
+          await actor._initializeAccessControlWithSecret(adminToken);
+        } catch {
+          // Non-fatal: proceed without platform-level initialization
+        }
+      }
+
       return actor;
     },
     // Only refetch when identity changes
     staleTime: Number.POSITIVE_INFINITY,
-    // This will cause the actor to be recreated when the identity changes
+    retry: false,
     enabled: true,
   });
 

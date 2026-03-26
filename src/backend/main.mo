@@ -7,7 +7,9 @@ import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
+import Migration "migration";
 
+(with migration = Migration.run)
 actor {
   include MixinStorage();
 
@@ -15,7 +17,8 @@ actor {
     id : Nat;
     itemNumber : Text;
     description : Text;
-    photo : ?Storage.ExternalBlob;
+    mainPhoto : ?Storage.ExternalBlob;
+    subPhotos : [Storage.ExternalBlob];
     price : Text;
   };
 
@@ -30,12 +33,12 @@ actor {
   var nextId = 0;
 
   type HomepageContent = {
-    photo : ?Storage.ExternalBlob;
+    operatorPhoto : ?Storage.ExternalBlob;
     storyText : Text;
   };
 
   var homepageContent : HomepageContent = {
-    photo = null;
+    operatorPhoto = null;
     storyText = "";
   };
 
@@ -88,14 +91,20 @@ actor {
     userProfiles.add(caller, profile);
   };
 
+  // Public query - anyone can view items in the selling site
   public query ({ caller }) func getItems() : async [EquipmentItem] {
     items.values().toArray().sort();
   };
 
+  // Admin-only query - exposes internal state
   public query ({ caller }) func getNextItemId() : async Nat {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can access next item ID");
+    };
     nextId;
   };
 
+  // Public query - anyone can view homepage content
   public query ({ caller }) func getHomepageContent() : async HomepageContent {
     homepageContent;
   };
@@ -109,7 +118,8 @@ actor {
       id;
       itemNumber = item.itemNumber;
       description = item.description;
-      photo = item.photo;
+      mainPhoto = item.mainPhoto;
+      subPhotos = item.subPhotos;
       price = item.price;
     };
     items.add(id, newItem);
@@ -141,3 +151,4 @@ actor {
     true;
   };
 };
+

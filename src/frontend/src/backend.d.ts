@@ -18,12 +18,13 @@ export interface EquipmentItem {
     id: bigint;
     description: string;
     itemNumber: string;
-    photo?: ExternalBlob;
     price: string;
+    mainPhoto?: ExternalBlob;
+    subPhotos: Array<ExternalBlob>;
 }
 export interface HomepageContent {
     storyText: string;
-    photo?: ExternalBlob;
+    operatorPhoto?: ExternalBlob;
 }
 export interface UserProfile {
     name: string;

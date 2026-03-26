@@ -1,8 +1,157 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "motion/react";
+import { useState } from "react";
+import type { EquipmentItem } from "../backend";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 import { useItems } from "../hooks/useQueries";
+
+function EquipmentCard({
+  item,
+  index,
+}: {
+  item: EquipmentItem;
+  index: number;
+}) {
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(
+    item.mainPhoto?.getDirectURL() ?? null,
+  );
+
+  const allThumbs = [
+    ...(item.mainPhoto ? [item.mainPhoto.getDirectURL()] : []),
+    ...item.subPhotos.map((p) => p.getDirectURL()),
+  ];
+
+  return (
+    <motion.div
+      className="rounded-2xl overflow-hidden flex flex-col"
+      style={{
+        background: "oklch(0.20 0.055 240)",
+        border: "1px solid oklch(0.32 0.05 240)",
+      }}
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.06, duration: 0.4 }}
+      data-ocid={`equipment.item.${index + 1}`}
+    >
+      {/* Main photo area */}
+      <div
+        className="w-full relative overflow-hidden"
+        style={{ height: "220px", background: "oklch(0.17 0.05 240)" }}
+      >
+        {selectedPhoto ? (
+          <img
+            src={selectedPhoto}
+            alt={item.itemNumber}
+            className="w-full h-full object-cover transition-all duration-300"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <svg
+              aria-hidden="true"
+              width="48"
+              height="48"
+              viewBox="0 0 48 48"
+              fill="none"
+              className="opacity-25"
+            >
+              <rect
+                x="4"
+                y="8"
+                width="40"
+                height="32"
+                rx="4"
+                stroke="oklch(0.72 0.12 185)"
+                strokeWidth="2"
+                fill="none"
+              />
+              <circle
+                cx="16"
+                cy="20"
+                r="4"
+                stroke="oklch(0.72 0.12 185)"
+                strokeWidth="1.5"
+                fill="none"
+              />
+              <path
+                d="M4 36 L14 26 L22 33 L30 27 L44 36"
+                stroke="oklch(0.72 0.12 185)"
+                strokeWidth="1.5"
+                fill="none"
+              />
+            </svg>
+          </div>
+        )}
+        {/* Item number badge */}
+        <div
+          className="absolute top-3 left-3 px-2 py-1 rounded-md text-xs font-mono font-bold"
+          style={{
+            background: "oklch(0.15 0.055 240 / 0.85)",
+            color: "oklch(0.72 0.12 185)",
+            border: "1px solid oklch(0.35 0.04 240 / 0.6)",
+          }}
+        >
+          {item.itemNumber}
+        </div>
+      </div>
+
+      {/* Sub-photo thumbnails */}
+      {allThumbs.length > 1 && (
+        <div
+          className="flex gap-1.5 px-3 py-2"
+          style={{ borderBottom: "1px solid oklch(0.28 0.04 240)" }}
+        >
+          {allThumbs.map((src, i) => (
+            <button
+              key={src}
+              type="button"
+              onClick={() => setSelectedPhoto(src)}
+              className="flex-shrink-0 rounded overflow-hidden transition-all duration-150"
+              style={{
+                width: "44px",
+                height: "44px",
+                border:
+                  selectedPhoto === src
+                    ? "2px solid oklch(0.65 0.18 40)"
+                    : "2px solid transparent",
+                outline:
+                  selectedPhoto === src
+                    ? "1px solid oklch(0.65 0.18 40 / 0.4)"
+                    : "none",
+              }}
+              aria-label={`View image ${i + 1}`}
+            >
+              <img src={src} alt="" className="w-full h-full object-cover" />
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Info */}
+      <div className="flex-1 p-4 flex flex-col gap-2">
+        <p className="text-white text-sm leading-relaxed flex-1">
+          {item.description}
+        </p>
+        <div
+          className="flex items-center justify-between pt-2"
+          style={{ borderTop: "1px solid oklch(0.28 0.04 240)" }}
+        >
+          <span className="text-xs" style={{ color: "oklch(0.55 0.03 230)" }}>
+            {allThumbs.length > 0
+              ? `${allThumbs.length} kuva${allThumbs.length !== 1 ? "a" : ""}`
+              : "Ei kuvia"}
+          </span>
+          <span
+            className="text-xl font-bold"
+            style={{ color: "oklch(0.65 0.18 40)" }}
+          >
+            {item.price} €
+          </span>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 export default function EquipmentPage() {
   const { data: items, isLoading } = useItems();
@@ -14,7 +163,7 @@ export default function EquipmentPage() {
     >
       <Header />
 
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-12">
+      <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -33,11 +182,14 @@ export default function EquipmentPage() {
         </motion.div>
 
         {isLoading ? (
-          <div className="space-y-4" data-ocid="equipment.loading_state">
+          <div
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+            data-ocid="equipment.loading_state"
+          >
             {[1, 2, 3].map((i) => (
               <Skeleton
                 key={i}
-                className="h-20 w-full rounded-lg"
+                className="h-72 w-full rounded-2xl"
                 style={{ background: "oklch(0.28 0.05 240)" }}
               />
             ))}
@@ -73,115 +225,11 @@ export default function EquipmentPage() {
           </div>
         ) : (
           <div
-            className="rounded-xl overflow-hidden"
-            style={{ border: "1px solid oklch(0.35 0.04 240)" }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
             data-ocid="equipment.table"
           >
-            <div
-              className="grid grid-cols-12 gap-4 px-6 py-3 text-xs font-bold uppercase tracking-widest"
-              style={{
-                background: "oklch(0.18 0.055 240)",
-                color: "oklch(0.72 0.12 185)",
-              }}
-            >
-              <div className="col-span-2">#</div>
-              <div className="col-span-1">Photo</div>
-              <div className="col-span-7">Description</div>
-              <div className="col-span-2 text-right">Price</div>
-            </div>
-
             {items.map((item, idx) => (
-              <motion.div
-                key={String(item.id)}
-                className="grid grid-cols-12 gap-4 px-6 py-4 items-center"
-                style={{
-                  background:
-                    idx % 2 === 0
-                      ? "oklch(0.24 0.05 240)"
-                      : "oklch(0.22 0.05 240)",
-                  borderTop: "1px solid oklch(0.30 0.04 240)",
-                }}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.05 }}
-                data-ocid={`equipment.item.${idx + 1}`}
-              >
-                <div className="col-span-2">
-                  <span
-                    className="inline-block px-2 py-1 rounded text-xs font-mono font-bold"
-                    style={{
-                      background: "oklch(0.72 0.12 185 / 0.15)",
-                      color: "oklch(0.72 0.12 185)",
-                    }}
-                  >
-                    {item.itemNumber}
-                  </span>
-                </div>
-                <div className="col-span-1">
-                  {item.photo ? (
-                    <img
-                      src={item.photo.getDirectURL()}
-                      alt={item.itemNumber}
-                      className="w-14 h-14 rounded-lg object-cover"
-                      style={{ border: "1px solid oklch(0.35 0.04 240)" }}
-                    />
-                  ) : (
-                    <div
-                      className="w-14 h-14 rounded-lg flex items-center justify-center"
-                      style={{
-                        background: "oklch(0.28 0.05 240)",
-                        border: "1px dashed oklch(0.40 0.04 240)",
-                      }}
-                    >
-                      <svg
-                        aria-hidden="true"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                      >
-                        <rect
-                          x="2"
-                          y="4"
-                          width="16"
-                          height="12"
-                          rx="2"
-                          stroke="oklch(0.50 0.04 230)"
-                          strokeWidth="1.5"
-                          fill="none"
-                        />
-                        <circle
-                          cx="7"
-                          cy="8"
-                          r="1.5"
-                          stroke="oklch(0.50 0.04 230)"
-                          strokeWidth="1"
-                          fill="none"
-                        />
-                        <path
-                          d="M2 14 L6 10 L10 13 L13 11 L18 14"
-                          stroke="oklch(0.50 0.04 230)"
-                          strokeWidth="1"
-                          fill="none"
-                        />
-                      </svg>
-                    </div>
-                  )}
-                </div>
-                <div className="col-span-7">
-                  <p className="text-white text-sm font-medium line-clamp-2">
-                    {item.description}
-                  </p>
-                </div>
-                <div className="col-span-2 text-right">
-                  <span
-                    className="text-lg font-bold"
-                    style={{ color: "oklch(0.65 0.18 40)" }}
-                  >
-                    {item.price} €
-                  </span>
-                </div>
-              </motion.div>
+              <EquipmentCard key={String(item.id)} item={item} index={idx} />
             ))}
           </div>
         )}

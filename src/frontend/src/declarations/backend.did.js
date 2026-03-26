@@ -24,8 +24,9 @@ export const EquipmentItem = IDL.Record({
   'id' : IDL.Nat,
   'description' : IDL.Text,
   'itemNumber' : IDL.Text,
-  'photo' : IDL.Opt(ExternalBlob),
   'price' : IDL.Text,
+  'mainPhoto' : IDL.Opt(ExternalBlob),
+  'subPhotos' : IDL.Vec(ExternalBlob),
 });
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
@@ -35,7 +36,7 @@ export const UserRole = IDL.Variant({
 export const UserProfile = IDL.Record({ 'name' : IDL.Text });
 export const HomepageContent = IDL.Record({
   'storyText' : IDL.Text,
-  'photo' : IDL.Opt(ExternalBlob),
+  'operatorPhoto' : IDL.Opt(ExternalBlob),
 });
 
 export const idlService = IDL.Service({
@@ -106,8 +107,9 @@ export const idlFactory = ({ IDL }) => {
     'id' : IDL.Nat,
     'description' : IDL.Text,
     'itemNumber' : IDL.Text,
-    'photo' : IDL.Opt(ExternalBlob),
     'price' : IDL.Text,
+    'mainPhoto' : IDL.Opt(ExternalBlob),
+    'subPhotos' : IDL.Vec(ExternalBlob),
   });
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
@@ -117,7 +119,7 @@ export const idlFactory = ({ IDL }) => {
   const UserProfile = IDL.Record({ 'name' : IDL.Text });
   const HomepageContent = IDL.Record({
     'storyText' : IDL.Text,
-    'photo' : IDL.Opt(ExternalBlob),
+    'operatorPhoto' : IDL.Opt(ExternalBlob),
   });
   
   return IDL.Service({

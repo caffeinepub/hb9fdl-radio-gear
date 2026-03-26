@@ -7,7 +7,7 @@ export function useHomepageContent() {
   return useQuery<HomepageContent>({
     queryKey: ["homepageContent"],
     queryFn: async () => {
-      if (!actor) return { storyText: "", photo: undefined };
+      if (!actor) return { storyText: "", operatorPhoto: undefined };
       return actor.getHomepageContent();
     },
     enabled: !!actor && !isFetching,

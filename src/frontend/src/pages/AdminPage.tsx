@@ -10,172 +10,30 @@ import { ExternalBlob } from "../backend";
 import type { EquipmentItem } from "../backend";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
-import { useActor } from "../hooks/useActor";
-import { useInternetIdentity } from "../hooks/useInternetIdentity";
 import {
   useAddItem,
-  useClaimFirstAdmin,
   useDeleteItem,
   useGetNextItemId,
   useHomepageContent,
-  useIsAdmin,
   useItems,
   useSetHomepageContent,
   useUpdateItem,
 } from "../hooks/useQueries";
-
-function LoginPrompt() {
-  const { login, isLoggingIn, isInitializing } = useInternetIdentity();
-  const busy = isLoggingIn || isInitializing;
-  return (
-    <div
-      className="flex-1 flex items-center justify-center"
-      data-ocid="admin.dialog"
-    >
-      <motion.div
-        className="text-center p-10 rounded-2xl max-w-md w-full"
-        style={{
-          background: "oklch(0.22 0.055 240)",
-          border: "1px solid oklch(0.35 0.04 240)",
-        }}
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-      >
-        <svg
-          aria-hidden="true"
-          width="56"
-          height="56"
-          viewBox="0 0 56 56"
-          fill="none"
-          className="mx-auto mb-4"
-        >
-          <circle
-            cx="28"
-            cy="28"
-            r="24"
-            stroke="oklch(0.72 0.12 185)"
-            strokeWidth="2"
-            fill="none"
-          />
-          <path
-            d="M20 20 Q20 12 28 12 Q36 12 36 20 L36 26 L20 26 Z"
-            stroke="oklch(0.72 0.12 185)"
-            strokeWidth="2"
-            fill="none"
-          />
-          <rect
-            x="18"
-            y="26"
-            width="20"
-            height="16"
-            rx="3"
-            stroke="oklch(0.72 0.12 185)"
-            strokeWidth="2"
-            fill="none"
-          />
-          <circle cx="28" cy="34" r="2" fill="oklch(0.72 0.12 185)" />
-        </svg>
-        <h2 className="text-xl font-bold text-white mb-2">
-          Admin-kirjautuminen
-        </h2>
-        <p className="text-sm mb-6" style={{ color: "oklch(0.65 0.03 230)" }}>
-          Kirjaudu sisään hallinnoidaksesi sivustoa.
-        </p>
-        <Button
-          onClick={login}
-          disabled={busy}
-          className="w-full py-3 font-semibold"
-          style={{ background: "oklch(0.65 0.18 40)", color: "white" }}
-          data-ocid="admin.submit_button"
-        >
-          {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isLoggingIn
-            ? "Kirjaudutaan..."
-            : isInitializing
-              ? "Ladataan..."
-              : "Kirjaudu sisään"}
-        </Button>
-      </motion.div>
-    </div>
-  );
-}
-
-function ClaimAdminPrompt() {
-  const { mutateAsync: claimAdmin, isPending } = useClaimFirstAdmin();
-  const { clear } = useInternetIdentity();
-
-  const handleClaim = async () => {
-    try {
-      const success = await claimAdmin();
-      if (!success) {
-        toast.error("Admin-oikeudet on jo myönnetty toiselle käyttäjälle.");
-      }
-    } catch {
-      toast.error("Virhe admin-oikeuksien hakemisessa.");
-    }
-  };
-
-  return (
-    <div
-      className="flex-1 flex items-center justify-center"
-      data-ocid="admin.dialog"
-    >
-      <motion.div
-        className="text-center p-10 rounded-2xl max-w-md w-full"
-        style={{
-          background: "oklch(0.22 0.055 240)",
-          border: "1px solid oklch(0.35 0.04 240)",
-        }}
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-      >
-        <h2 className="text-xl font-bold text-white mb-2">
-          Aktivoi admin-oikeudet
-        </h2>
-        <p className="text-sm mb-6" style={{ color: "oklch(0.65 0.03 230)" }}>
-          Olet kirjautunut sisään, mutta sinulla ei ole vielä admin-oikeuksia.
-          Klikkaa alla olevaa painiketta aktivoidaksesi ne.
-        </p>
-        <Button
-          onClick={handleClaim}
-          disabled={isPending}
-          className="w-full py-3 font-semibold mb-3"
-          style={{ background: "oklch(0.65 0.18 40)", color: "white" }}
-          data-ocid="admin.submit_button"
-        >
-          {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isPending ? "Aktivoidaan..." : "Aktivoi admin-oikeudet"}
-        </Button>
-        <Button
-          onClick={clear}
-          variant="ghost"
-          className="w-full text-sm"
-          style={{ color: "oklch(0.60 0.03 230)" }}
-          data-ocid="admin.cancel_button"
-        >
-          Kirjaudu ulos
-        </Button>
-      </motion.div>
-    </div>
-  );
-}
 
 function HomepageContentSection() {
   const { data: content } = useHomepageContent();
   const { mutateAsync: saveContent, isPending } = useSetHomepageContent();
   const [storyText, setStoryText] = useState(content?.storyText ?? "");
   const [photoPreview, setPhotoPreview] = useState<string | null>(
-    content?.photo?.getDirectURL() ?? null,
+    content?.operatorPhoto?.getDirectURL() ?? null,
   );
   const [photoBlob, setPhotoBlob] = useState<ExternalBlob | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Operator name (localStorage)
   const [operatorName, setOperatorName] = useState(
     () => localStorage.getItem("operatorName") ?? "Teemu",
   );
 
-  // Second photo (localStorage)
   const [secondPhotoPreview, setSecondPhotoPreview] = useState<string | null>(
     () => localStorage.getItem("secondPhoto") ?? null,
   );
@@ -205,16 +63,14 @@ function HomepageContentSection() {
 
   const handleSave = async () => {
     try {
-      const photo = photoBlob ?? content?.photo ?? undefined;
-      await saveContent({ storyText, photo });
+      const operatorPhoto = photoBlob ?? content?.operatorPhoto ?? undefined;
+      await saveContent({ storyText, operatorPhoto });
       localStorage.setItem("operatorName", operatorName);
       toast.success("Kotisivu tallennettu!");
     } catch {
       toast.error("Tallennus epäonnistui.");
     }
   };
-
-  const triggerPhotoUpload = () => fileInputRef.current?.click();
 
   return (
     <section
@@ -243,8 +99,7 @@ function HomepageContentSection() {
               border: "2px dashed oklch(0.72 0.12 185 / 0.5)",
               background: "oklch(0.26 0.05 240)",
             }}
-            onClick={triggerPhotoUpload}
-            data-ocid="admin.upload_button"
+            onClick={() => fileInputRef.current?.click()}
             aria-label="Upload operator photo"
           >
             {photoPreview ? (
@@ -277,7 +132,6 @@ function HomepageContentSection() {
             accept="image/*"
             className="hidden"
             onChange={handleFileChange}
-            data-ocid="admin.dropzone"
           />
         </div>
 
@@ -298,7 +152,6 @@ function HomepageContentSection() {
                 border: "1px solid oklch(0.35 0.04 240)",
                 color: "white",
               }}
-              data-ocid="admin.input"
             />
           </div>
           <div>
@@ -318,13 +171,11 @@ function HomepageContentSection() {
                 border: "1px solid oklch(0.35 0.04 240)",
                 color: "white",
               }}
-              data-ocid="admin.textarea"
             />
           </div>
         </div>
       </div>
 
-      {/* Second photo for front page green section */}
       <div className="mt-6">
         <Label
           className="text-sm mb-2 block"
@@ -341,7 +192,6 @@ function HomepageContentSection() {
               background: "oklch(0.26 0.05 240)",
             }}
             onClick={() => secondPhotoInputRef.current?.click()}
-            data-ocid="admin.upload_button"
             aria-label="Upload second photo"
           >
             {secondPhotoPreview ? (
@@ -388,7 +238,6 @@ function HomepageContentSection() {
           onClick={handleSave}
           disabled={isPending}
           style={{ background: "oklch(0.65 0.18 40)", color: "white" }}
-          data-ocid="admin.save_button"
         >
           {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isPending ? "Tallennetaan..." : "Tallenna"}
@@ -400,6 +249,8 @@ function HomepageContentSection() {
 
 type EditingItem = Partial<EquipmentItem> & { isNew?: boolean };
 
+const MAX_SUB_PHOTOS = 5;
+
 function EquipmentSection() {
   const { data: items } = useItems();
   const { data: nextId } = useGetNextItemId();
@@ -408,9 +259,12 @@ function EquipmentSection() {
   const { mutateAsync: deleteItem, isPending: isDeleting } = useDeleteItem();
 
   const [editing, setEditing] = useState<EditingItem | null>(null);
-  const [photoBlob, setPhotoBlob] = useState<ExternalBlob | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [mainPhotoBlob, setMainPhotoBlob] = useState<ExternalBlob | null>(null);
+  const [mainPhotoPreview, setMainPhotoPreview] = useState<string | null>(null);
+  const [subPhotoBlobs, setSubPhotoBlobs] = useState<ExternalBlob[]>([]);
+  const [subPhotoPreviews, setSubPhotoPreviews] = useState<string[]>([]);
+  const mainFileInputRef = useRef<HTMLInputElement>(null);
+  const subFileInputRef = useRef<HTMLInputElement>(null);
 
   const openNew = () => {
     setEditing({
@@ -419,36 +273,86 @@ function EquipmentSection() {
       itemNumber: "",
       description: "",
       price: "",
+      subPhotos: [],
     });
-    setPhotoBlob(null);
-    setPhotoPreview(null);
+    setMainPhotoBlob(null);
+    setMainPhotoPreview(null);
+    setSubPhotoBlobs([]);
+    setSubPhotoPreviews([]);
   };
 
   const openEdit = (item: EquipmentItem) => {
     setEditing({ ...item });
-    setPhotoBlob(null);
-    setPhotoPreview(item.photo?.getDirectURL() ?? null);
+    setMainPhotoBlob(null);
+    setMainPhotoPreview(item.mainPhoto?.getDirectURL() ?? null);
+    setSubPhotoBlobs([]);
+    setSubPhotoPreviews(item.subPhotos.map((p) => p.getDirectURL()));
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMainFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const bytes = new Uint8Array(await file.arrayBuffer());
     const blob = ExternalBlob.fromBytes(bytes);
-    setPhotoBlob(blob);
-    setPhotoPreview(blob.getDirectURL());
+    setMainPhotoBlob(blob);
+    setMainPhotoPreview(blob.getDirectURL());
+  };
+
+  const handleSubFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    const existing = subPhotoBlobs.length + (editing?.subPhotos?.length ?? 0);
+    const remaining = MAX_SUB_PHOTOS - existing;
+    const toProcess = files.slice(0, remaining);
+    const newBlobs: ExternalBlob[] = [];
+    const newPreviews: string[] = [];
+    for (const file of toProcess) {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const blob = ExternalBlob.fromBytes(bytes);
+      newBlobs.push(blob);
+      newPreviews.push(blob.getDirectURL());
+    }
+    setSubPhotoBlobs((prev) => [...prev, ...newBlobs]);
+    setSubPhotoPreviews((prev) => [...prev, ...newPreviews]);
+    e.target.value = "";
+  };
+
+  const removeSubPhoto = (index: number) => {
+    const existingCount = editing?.subPhotos?.length ?? 0;
+    if (index < existingCount) {
+      setEditing((prev) =>
+        prev
+          ? {
+              ...prev,
+              subPhotos: prev.subPhotos?.filter((_, i) => i !== index) ?? [],
+            }
+          : prev,
+      );
+      setSubPhotoPreviews((prev) => prev.filter((_, i) => i !== index));
+    } else {
+      const blobIndex = index - existingCount;
+      setSubPhotoBlobs((prev) => prev.filter((_, i) => i !== blobIndex));
+      setSubPhotoPreviews((prev) => prev.filter((_, i) => i !== index));
+    }
   };
 
   const handleSave = async () => {
     if (!editing) return;
     try {
-      const photo = photoBlob ?? editing.photo ?? undefined;
+      const mainPhoto = mainPhotoBlob ?? editing.mainPhoto ?? undefined;
+      const existingSubPhotos = editing.subPhotos ?? [];
+      const allSubPhotos = [...existingSubPhotos, ...subPhotoBlobs];
       const item: EquipmentItem = {
         id: editing.id ?? BigInt(1),
         itemNumber: editing.itemNumber ?? "",
         description: editing.description ?? "",
         price: editing.price ?? "",
-        photo,
+        mainPhoto,
+        subPhotos: allSubPhotos,
       };
       if (editing.isNew) {
         await addItem(item);
@@ -472,6 +376,12 @@ function EquipmentSection() {
     }
   };
 
+  // Compute combined sub-photo previews for the editing form
+  const existingSubPreviews =
+    editing?.subPhotos?.map((p) => p.getDirectURL()) ?? [];
+  const allSubPreviews = [...existingSubPreviews, ...subPhotoPreviews];
+  const totalSubPhotos = allSubPreviews.length;
+
   return (
     <section
       className="rounded-2xl p-6"
@@ -488,7 +398,7 @@ function EquipmentSection() {
           onClick={openNew}
           style={{ background: "oklch(0.65 0.18 40)", color: "white" }}
           size="sm"
-          data-ocid="admin.primary_button"
+          data-ocid="equipment.open_modal_button"
         >
           <Plus className="w-4 h-4 mr-1" /> Lisää laite
         </Button>
@@ -503,7 +413,7 @@ function EquipmentSection() {
           }}
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          data-ocid="admin.modal"
+          data-ocid="equipment.modal"
         >
           <h3 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">
             {editing.isNew ? "Uusi laite" : "Muokkaa laitetta"}
@@ -529,7 +439,7 @@ function EquipmentSection() {
                   border: "1px solid oklch(0.35 0.04 240)",
                   color: "white",
                 }}
-                data-ocid="admin.input"
+                data-ocid="equipment.input"
               />
             </div>
             <div>
@@ -552,7 +462,6 @@ function EquipmentSection() {
                   border: "1px solid oklch(0.35 0.04 240)",
                   color: "white",
                 }}
-                data-ocid="admin.input"
               />
             </div>
             <div className="md:col-span-2">
@@ -576,57 +485,129 @@ function EquipmentSection() {
                   border: "1px solid oklch(0.35 0.04 240)",
                   color: "white",
                 }}
-                data-ocid="admin.textarea"
+                data-ocid="equipment.textarea"
               />
             </div>
+
+            {/* Main photo */}
             <div>
               <Label
                 className="text-xs mb-1 block"
                 style={{ color: "oklch(0.72 0.12 185)" }}
               >
-                Kuva
+                Pääkuva
               </Label>
               <button
                 type="button"
-                className="w-24 h-24 rounded-lg cursor-pointer relative overflow-hidden"
+                className="w-28 h-28 rounded-lg cursor-pointer relative overflow-hidden"
                 style={{
                   border: "2px dashed oklch(0.72 0.12 185 / 0.5)",
                   background: "oklch(0.22 0.05 240)",
                 }}
-                onClick={() => fileInputRef.current?.click()}
-                aria-label="Upload item photo"
-                data-ocid="admin.upload_button"
+                onClick={() => mainFileInputRef.current?.click()}
+                aria-label="Upload main image"
+                data-ocid="equipment.upload_button"
               >
-                {photoPreview ? (
+                {mainPhotoPreview ? (
                   <img
-                    src={photoPreview}
+                    src={mainPhotoPreview}
                     alt=""
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-1">
                     <Plus
                       className="w-6 h-6"
                       style={{ color: "oklch(0.72 0.12 185)" }}
                     />
+                    <span
+                      className="text-xs"
+                      style={{ color: "oklch(0.55 0.03 230)" }}
+                    >
+                      Pääkuva
+                    </span>
                   </div>
                 )}
               </button>
               <input
-                ref={fileInputRef}
+                ref={mainFileInputRef}
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={handleFileChange}
+                onChange={handleMainFileChange}
+              />
+            </div>
+
+            {/* Sub photos */}
+            <div className="md:col-span-2">
+              <Label
+                className="text-xs mb-2 block"
+                style={{ color: "oklch(0.72 0.12 185)" }}
+              >
+                Lisäkuvat ({totalSubPhotos}/{MAX_SUB_PHOTOS})
+              </Label>
+              <div className="flex flex-wrap gap-2 items-start">
+                {allSubPreviews.map((src, i) => (
+                  <div key={src} className="relative w-20 h-20 group">
+                    <img
+                      src={src}
+                      alt={`Lisäkuva ${i + 1}`}
+                      className="w-full h-full object-cover rounded-lg"
+                      style={{ border: "1px solid oklch(0.35 0.04 240)" }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeSubPhoto(i)}
+                      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      style={{ background: "oklch(0.577 0.245 27.325)" }}
+                      aria-label="Poista kuva"
+                    >
+                      <X className="w-3 h-3 text-white" />
+                    </button>
+                  </div>
+                ))}
+                {totalSubPhotos < MAX_SUB_PHOTOS && (
+                  <button
+                    type="button"
+                    className="w-20 h-20 rounded-lg flex flex-col items-center justify-center cursor-pointer"
+                    style={{
+                      border: "2px dashed oklch(0.72 0.12 185 / 0.4)",
+                      background: "oklch(0.22 0.05 240)",
+                    }}
+                    onClick={() => subFileInputRef.current?.click()}
+                    aria-label="Add sub image"
+                    data-ocid="equipment.dropzone"
+                  >
+                    <Plus
+                      className="w-5 h-5"
+                      style={{ color: "oklch(0.72 0.12 185)" }}
+                    />
+                    <span
+                      className="text-xs mt-1"
+                      style={{ color: "oklch(0.55 0.03 230)" }}
+                    >
+                      Lisäkuva
+                    </span>
+                  </button>
+                )}
+              </div>
+              <input
+                ref={subFileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={handleSubFileChange}
               />
             </div>
           </div>
+
           <div className="mt-4 flex gap-2 justify-end">
             <Button
               variant="ghost"
               onClick={() => setEditing(null)}
               size="sm"
-              data-ocid="admin.cancel_button"
+              data-ocid="equipment.cancel_button"
             >
               <X className="w-4 h-4 mr-1" /> Peruuta
             </Button>
@@ -635,7 +616,7 @@ function EquipmentSection() {
               disabled={isAdding || isUpdating}
               size="sm"
               style={{ background: "oklch(0.65 0.18 40)", color: "white" }}
-              data-ocid="admin.confirm_button"
+              data-ocid="equipment.save_button"
             >
               {(isAdding || isUpdating) && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -669,8 +650,8 @@ function EquipmentSection() {
             }}
           >
             <div className="col-span-2">#</div>
-            <div className="col-span-1">Kuva</div>
-            <div className="col-span-5">Kuvaus</div>
+            <div className="col-span-2">Kuvat</div>
+            <div className="col-span-4">Kuvaus</div>
             <div className="col-span-2">Hinta</div>
             <div className="col-span-2 text-right">Toiminnot</div>
           </div>
@@ -695,12 +676,14 @@ function EquipmentSection() {
                   {item.itemNumber}
                 </span>
               </div>
-              <div className="col-span-1">
-                {item.photo ? (
+              <div className="col-span-2 flex gap-1 flex-wrap">
+                {item.mainPhoto ? (
                   <img
-                    src={item.photo.getDirectURL()}
+                    src={item.mainPhoto.getDirectURL()}
                     alt=""
                     className="w-10 h-10 rounded object-cover"
+                    title="Pääkuva"
+                    style={{ border: "2px solid oklch(0.65 0.18 40 / 0.6)" }}
                   />
                 ) : (
                   <div
@@ -708,8 +691,28 @@ function EquipmentSection() {
                     style={{ background: "oklch(0.28 0.05 240)" }}
                   />
                 )}
+                {item.subPhotos.slice(0, 2).map((sp, si) => (
+                  <img
+                    key={sp.getDirectURL()}
+                    src={sp.getDirectURL()}
+                    alt={`Lisäkuva ${si + 1}`}
+                    className="w-10 h-10 rounded object-cover"
+                    style={{ border: "1px solid oklch(0.35 0.04 240)" }}
+                  />
+                ))}
+                {item.subPhotos.length > 2 && (
+                  <div
+                    className="w-10 h-10 rounded flex items-center justify-center text-xs font-bold"
+                    style={{
+                      background: "oklch(0.28 0.05 240)",
+                      color: "oklch(0.72 0.12 185)",
+                    }}
+                  >
+                    +{item.subPhotos.length - 2}
+                  </div>
+                )}
               </div>
-              <div className="col-span-5 text-white line-clamp-1 text-xs">
+              <div className="col-span-4 text-white line-clamp-1 text-xs">
                 {item.description}
               </div>
               <div
@@ -754,61 +757,29 @@ function EquipmentSection() {
 }
 
 export default function AdminPage() {
-  const { identity } = useInternetIdentity();
-  const { actor, isFetching: actorFetching } = useActor();
-  const { data: isAdmin, isFetching: adminFetching } = useIsAdmin();
-
-  // isChecking is true while we have an identity but haven't resolved isAdmin yet:
-  // - actor is still loading, OR
-  // - admin query is in flight, OR
-  // - actor loaded but isAdmin hasn't resolved (brief gap between actor ready and query start)
-  const isChecking =
-    !!identity &&
-    (actorFetching || adminFetching || (!!actor && isAdmin === undefined));
-
-  const showClaimPrompt = !!identity && !isChecking && isAdmin === false;
-
   return (
     <div
       className="min-h-screen flex flex-col"
       style={{ background: "oklch(0.20 0.055 240)" }}
     >
       <Header />
-
-      {!identity ? (
-        <LoginPrompt />
-      ) : isChecking ? (
-        <div
-          className="flex-1 flex items-center justify-center"
-          data-ocid="admin.loading_state"
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          <Loader2
-            className="w-8 h-8 animate-spin"
-            style={{ color: "oklch(0.72 0.12 185)" }}
+          <h1 className="text-2xl font-bold text-white tracking-wider uppercase mb-1">
+            Admin-paneeli
+          </h1>
+          <div
+            className="w-16 h-0.5 mb-8 rounded"
+            style={{ background: "oklch(0.65 0.18 40)" }}
           />
-        </div>
-      ) : showClaimPrompt ? (
-        <ClaimAdminPrompt />
-      ) : (
-        <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h1 className="text-2xl font-bold text-white tracking-wider uppercase mb-1">
-              Admin-paneeli
-            </h1>
-            <div
-              className="w-16 h-0.5 mb-8 rounded"
-              style={{ background: "oklch(0.65 0.18 40)" }}
-            />
-            <HomepageContentSection />
-            <EquipmentSection />
-          </motion.div>
-        </main>
-      )}
-
+          <HomepageContentSection />
+          <EquipmentSection />
+        </motion.div>
+      </main>
       <Footer />
     </div>
   );

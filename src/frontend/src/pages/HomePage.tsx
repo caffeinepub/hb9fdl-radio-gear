@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import Footer from "../components/Footer";
@@ -122,11 +123,35 @@ export default function HomePage() {
               HB9FDL / OH6KNW
             </h1>
             <h2
-              className="text-xl md:text-2xl font-light mb-6"
+              className="text-xl md:text-2xl font-light mb-8"
               style={{ color: "oklch(0.80 0.06 200)" }}
             >
               Ham Radio Equipment Sales
             </h2>
+
+            <div className="flex flex-wrap gap-3">
+              <Link to="/equipment">
+                <button
+                  type="button"
+                  className="px-6 py-3 rounded-lg font-semibold text-sm transition-all hover:opacity-90"
+                  style={{
+                    background: "oklch(0.72 0.12 185)",
+                    color: "oklch(0.15 0.04 240)",
+                  }}
+                >
+                  Myytävät laitteet
+                </button>
+              </Link>
+              <Link to="/admin">
+                <button
+                  type="button"
+                  className="px-6 py-3 rounded-lg font-semibold text-sm transition-all hover:opacity-90"
+                  style={{ background: "oklch(0.65 0.18 40)", color: "white" }}
+                >
+                  Admin
+                </button>
+              </Link>
+            </div>
           </motion.div>
 
           <motion.div
@@ -135,9 +160,9 @@ export default function HomePage() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.7, delay: 0.2 }}
           >
-            {content?.photo ? (
+            {content?.operatorPhoto ? (
               <img
-                src={content.photo.getDirectURL()}
+                src={content.operatorPhoto.getDirectURL()}
                 alt="Operator"
                 className="w-48 h-48 md:w-64 md:h-64 rounded-full object-cover"
                 style={{ border: "3px solid oklch(0.72 0.12 185)" }}

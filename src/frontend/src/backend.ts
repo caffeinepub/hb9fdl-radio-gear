@@ -143,6 +143,8 @@ export interface backendInterface {
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     setHomepageContent(content: HomepageContent): Promise<boolean>;
     updateItem(item: EquipmentItem): Promise<boolean>;
+    getVisitorCount(): Promise<bigint>;
+    incrementVisitorCount(): Promise<bigint>;
 }
 import type { EquipmentItem as _EquipmentItem, ExternalBlob as _ExternalBlob, HomepageContent as _HomepageContent, UserProfile as _UserProfile, UserRole as _UserRole, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
@@ -454,6 +456,14 @@ export class Backend implements backendInterface {
             const result = await this.actor.updateItem(await to_candid_EquipmentItem_n8(this._uploadFile, this._downloadFile, arg0));
             return result;
         }
+    }
+    async getVisitorCount(): Promise<bigint> {
+        const result = await this.actor.getVisitorCount();
+        return result;
+    }
+    async incrementVisitorCount(): Promise<bigint> {
+        const result = await this.actor.incrementVisitorCount();
+        return result;
     }
 }
 async function from_candid_EquipmentItem_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _EquipmentItem): Promise<EquipmentItem> {

@@ -115,24 +115,24 @@ export function useGetNextItemId() {
 }
 
 export function useVisitorCount() {
+  const { actor, isFetching } = useActor();
   return useQuery<bigint>({
     queryKey: ["visitorCount"],
     queryFn: async () => {
-      const stored = localStorage.getItem("hf_visitor_count");
-      return BigInt(stored ? Number.parseInt(stored, 10) : 0);
+      if (!actor) return BigInt(0);
+      return actor.getVisitorCount();
     },
+    enabled: !!actor && !isFetching,
   });
 }
 
 export function useIncrementVisitorCount() {
+  const { actor } = useActor();
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async () => {
-      const stored = localStorage.getItem("hf_visitor_count");
-      const current = stored ? Number.parseInt(stored, 10) : 0;
-      const next = current + 1;
-      localStorage.setItem("hf_visitor_count", String(next));
-      return BigInt(next);
+      if (!actor) return BigInt(0);
+      return actor.incrementVisitorCount();
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["visitorCount"] }),
   });

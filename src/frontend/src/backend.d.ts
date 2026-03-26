@@ -45,6 +45,8 @@ export interface backendInterface {
     getItems(): Promise<Array<EquipmentItem>>;
     getNextItemId(): Promise<bigint>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
+    incrementVisitorCount(): Promise<bigint>;
+    getVisitorCount(): Promise<bigint>;
     isCallerAdmin(): Promise<boolean>;
     isCallerAdminSafe(): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;

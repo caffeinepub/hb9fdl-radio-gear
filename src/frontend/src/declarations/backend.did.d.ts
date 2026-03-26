@@ -63,6 +63,8 @@ export interface _SERVICE {
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getHomepageContent' : ActorMethod<[], HomepageContent>,
   'getItems' : ActorMethod<[], Array<EquipmentItem>>,
+  'getVisitorCount' : ActorMethod<[], bigint>,
+  'incrementVisitorCount' : ActorMethod<[], bigint>,
   'getNextItemId' : ActorMethod<[], bigint>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,

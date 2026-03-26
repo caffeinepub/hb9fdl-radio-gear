@@ -3,7 +3,11 @@ import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
-import { useHomepageContent } from "../hooks/useQueries";
+import {
+  useHomepageContent,
+  useIncrementVisitorCount,
+  useVisitorCount,
+} from "../hooks/useQueries";
 
 function RadioWavesSVG({ className }: { className?: string }) {
   return (
@@ -72,6 +76,13 @@ export default function HomePage() {
   const { data: content, isLoading } = useHomepageContent();
   const [operatorName, setOperatorName] = useState("Teemu");
   const [secondPhoto, setSecondPhoto] = useState<string | null>(null);
+  const { data: visitorCount } = useVisitorCount();
+  const { mutate: incrementVisitor } = useIncrementVisitorCount();
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: increment once on mount
+  useEffect(() => {
+    incrementVisitor();
+  }, []);
 
   useEffect(() => {
     const stored = localStorage.getItem("operatorName");
@@ -329,6 +340,21 @@ export default function HomePage() {
       </section>
 
       <div className="flex-1" />
+      {visitorCount !== undefined && (
+        <div className="flex justify-center pb-2">
+          <span
+            className="text-xs px-3 py-1 rounded-full"
+            style={{
+              color: "oklch(0.72 0.12 185)",
+              background: "oklch(0.20 0.04 240 / 0.6)",
+              border: "1px solid oklch(0.35 0.08 185 / 0.4)",
+            }}
+            data-ocid="homepage.visitor_count"
+          >
+            Kävijöitä: {visitorCount.toString()}
+          </span>
+        </div>
+      )}
       <Footer />
     </div>
   );

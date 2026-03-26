@@ -113,3 +113,27 @@ export function useGetNextItemId() {
     enabled: !!actor && !isFetching,
   });
 }
+
+export function useVisitorCount() {
+  return useQuery<bigint>({
+    queryKey: ["visitorCount"],
+    queryFn: async () => {
+      const stored = localStorage.getItem("hf_visitor_count");
+      return BigInt(stored ? Number.parseInt(stored, 10) : 0);
+    },
+  });
+}
+
+export function useIncrementVisitorCount() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const stored = localStorage.getItem("hf_visitor_count");
+      const current = stored ? Number.parseInt(stored, 10) : 0;
+      const next = current + 1;
+      localStorage.setItem("hf_visitor_count", String(next));
+      return BigInt(next);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["visitorCount"] }),
+  });
+}

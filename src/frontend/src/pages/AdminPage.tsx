@@ -2,7 +2,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Check, Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  Check,
+  Loader2,
+  Pencil,
+  Plus,
+  Trash2,
+  X,
+} from "lucide-react";
 import { motion } from "motion/react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -19,6 +28,22 @@ import {
   useSetHomepageContent,
   useUpdateItem,
 } from "../hooks/useQueries";
+
+const DEFAULT_CATEGORY = "HF-Radiot";
+
+function getCategories(): string[] {
+  try {
+    const stored = localStorage.getItem("hf_categories");
+    if (stored) return JSON.parse(stored) as string[];
+  } catch {}
+  const initial = [DEFAULT_CATEGORY];
+  localStorage.setItem("hf_categories", JSON.stringify(initial));
+  return initial;
+}
+
+function saveCategories(cats: string[]) {
+  localStorage.setItem("hf_categories", JSON.stringify(cats));
+}
 
 function HomepageContentSection() {
   const { data: content } = useHomepageContent();
@@ -247,6 +272,159 @@ function HomepageContentSection() {
   );
 }
 
+function CategoriesSection() {
+  const [categories, setCategories] = useState<string[]>(getCategories);
+  const [newCat, setNewCat] = useState("");
+
+  const handleAdd = () => {
+    const trimmed = newCat.trim();
+    if (!trimmed || categories.includes(trimmed)) return;
+    const updated = [...categories, trimmed];
+    setCategories(updated);
+    saveCategories(updated);
+    setNewCat("");
+    toast.success(`Kategoria "${trimmed}" lisätty!`);
+  };
+
+  const handleMoveUp = (index: number) => {
+    if (index === 0) return;
+    const updated = [...categories];
+    [updated[index - 1], updated[index]] = [updated[index], updated[index - 1]];
+    setCategories(updated);
+    saveCategories(updated);
+  };
+
+  const handleMoveDown = (index: number) => {
+    if (index === categories.length - 1) return;
+    const updated = [...categories];
+    [updated[index], updated[index + 1]] = [updated[index + 1], updated[index]];
+    setCategories(updated);
+    saveCategories(updated);
+  };
+
+  const handleDelete = (cat: string) => {
+    const updated = categories.filter((c) => c !== cat);
+    setCategories(updated);
+    saveCategories(updated);
+    toast.success(`Kategoria "${cat}" poistettu.`);
+  };
+
+  return (
+    <section
+      className="rounded-2xl p-6 mb-8"
+      style={{
+        background: "oklch(0.22 0.055 240)",
+        border: "1px solid oklch(0.35 0.04 240)",
+      }}
+    >
+      <h2 className="text-lg font-bold text-white mb-5 tracking-wider uppercase">
+        Kategoriat
+      </h2>
+
+      <div className="flex flex-col gap-2 mb-5">
+        {categories.map((cat, index) => (
+          <div
+            key={cat}
+            className="flex items-center justify-between px-4 py-2.5 rounded-xl"
+            style={{
+              background: "oklch(0.26 0.05 240)",
+              border: "1px solid oklch(0.32 0.05 240)",
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <span
+                className="w-2 h-2 rounded-full flex-shrink-0"
+                style={{ background: "oklch(0.65 0.18 40)" }}
+              />
+              <span className="text-sm text-white">{cat}</span>
+              {cat === DEFAULT_CATEGORY && (
+                <span
+                  className="text-xs px-2 py-0.5 rounded-full"
+                  style={{
+                    background: "oklch(0.65 0.18 40 / 0.2)",
+                    color: "oklch(0.82 0.14 40)",
+                    border: "1px solid oklch(0.65 0.18 40 / 0.3)",
+                  }}
+                >
+                  oletus
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-1">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 w-7 p-0"
+                onClick={() => handleMoveUp(index)}
+                disabled={index === 0}
+                aria-label={`Siirrä ylös ${cat}`}
+                data-ocid="categories.toggle"
+              >
+                <ArrowUp
+                  className="w-3.5 h-3.5"
+                  style={{ color: "oklch(0.72 0.12 185)" }}
+                />
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 w-7 p-0"
+                onClick={() => handleMoveDown(index)}
+                disabled={index === categories.length - 1}
+                aria-label={`Siirrä alas ${cat}`}
+                data-ocid="categories.toggle"
+              >
+                <ArrowDown
+                  className="w-3.5 h-3.5"
+                  style={{ color: "oklch(0.72 0.12 185)" }}
+                />
+              </Button>
+              {cat !== DEFAULT_CATEGORY && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 w-7 p-0"
+                  onClick={() => handleDelete(cat)}
+                  aria-label={`Poista kategoria ${cat}`}
+                  data-ocid="categories.delete_button"
+                >
+                  <Trash2
+                    className="w-3.5 h-3.5"
+                    style={{ color: "oklch(0.577 0.245 27.325)" }}
+                  />
+                </Button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex gap-2">
+        <Input
+          value={newCat}
+          onChange={(e) => setNewCat(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+          placeholder="Uuden kategorian nimi..."
+          className="flex-1"
+          style={{
+            background: "oklch(0.26 0.05 240)",
+            border: "1px solid oklch(0.35 0.04 240)",
+            color: "white",
+          }}
+          data-ocid="categories.input"
+        />
+        <Button
+          onClick={handleAdd}
+          style={{ background: "oklch(0.65 0.18 40)", color: "white" }}
+          data-ocid="categories.primary_button"
+        >
+          <Plus className="w-4 h-4 mr-1" /> Lisää
+        </Button>
+      </div>
+    </section>
+  );
+}
+
 type EditingItem = Partial<EquipmentItem> & { isNew?: boolean };
 
 const MAX_SUB_PHOTOS = 5;
@@ -263,6 +441,7 @@ function EquipmentSection() {
   const [mainPhotoPreview, setMainPhotoPreview] = useState<string | null>(null);
   const [subPhotoBlobs, setSubPhotoBlobs] = useState<ExternalBlob[]>([]);
   const [subPhotoPreviews, setSubPhotoPreviews] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState(DEFAULT_CATEGORY);
   const mainFileInputRef = useRef<HTMLInputElement>(null);
   const subFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -279,6 +458,7 @@ function EquipmentSection() {
     setMainPhotoPreview(null);
     setSubPhotoBlobs([]);
     setSubPhotoPreviews([]);
+    setSelectedCategory(DEFAULT_CATEGORY);
   };
 
   const openEdit = (item: EquipmentItem) => {
@@ -287,6 +467,9 @@ function EquipmentSection() {
     setMainPhotoPreview(item.mainPhoto?.getDirectURL() ?? null);
     setSubPhotoBlobs([]);
     setSubPhotoPreviews(item.subPhotos.map((p) => p.getDirectURL()));
+    setSelectedCategory(
+      localStorage.getItem(`hf_item_category_${item.id}`) ?? DEFAULT_CATEGORY,
+    );
   };
 
   const handleMainFileChange = async (
@@ -346,8 +529,9 @@ function EquipmentSection() {
       const mainPhoto = mainPhotoBlob ?? editing.mainPhoto ?? undefined;
       const existingSubPhotos = editing.subPhotos ?? [];
       const allSubPhotos = [...existingSubPhotos, ...subPhotoBlobs];
+      const itemId = editing.id ?? BigInt(1);
       const item: EquipmentItem = {
-        id: editing.id ?? BigInt(1),
+        id: itemId,
         itemNumber: editing.itemNumber ?? "",
         description: editing.description ?? "",
         price: editing.price ?? "",
@@ -361,6 +545,7 @@ function EquipmentSection() {
         await updateItem(item);
         toast.success("Laite päivitetty!");
       }
+      localStorage.setItem(`hf_item_category_${itemId}`, selectedCategory);
       setEditing(null);
     } catch {
       toast.error("Tallennus epäonnistui.");
@@ -370,6 +555,7 @@ function EquipmentSection() {
   const handleDelete = async (id: bigint) => {
     try {
       await deleteItem(id);
+      localStorage.removeItem(`hf_item_category_${id}`);
       toast.success("Laite poistettu.");
     } catch {
       toast.error("Poistaminen epäonnistui.");
@@ -381,6 +567,8 @@ function EquipmentSection() {
     editing?.subPhotos?.map((p) => p.getDirectURL()) ?? [];
   const allSubPreviews = [...existingSubPreviews, ...subPhotoPreviews];
   const totalSubPhotos = allSubPreviews.length;
+
+  const allCategories = getCategories();
 
   return (
     <section
@@ -464,6 +652,39 @@ function EquipmentSection() {
                 }}
               />
             </div>
+
+            {/* Category selector */}
+            <div>
+              <Label
+                className="text-xs mb-1 block"
+                style={{ color: "oklch(0.72 0.12 185)" }}
+              >
+                Kategoria
+              </Label>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full px-3 py-2 rounded-md text-sm"
+                style={{
+                  background: "oklch(0.22 0.05 240)",
+                  border: "1px solid oklch(0.35 0.04 240)",
+                  color: "white",
+                  outline: "none",
+                }}
+                data-ocid="equipment.select"
+              >
+                {allCategories.map((cat) => (
+                  <option
+                    key={cat}
+                    value={cat}
+                    style={{ background: "oklch(0.22 0.05 240)" }}
+                  >
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div className="md:col-span-2">
               <Label
                 className="text-xs mb-1 block"
@@ -651,8 +872,9 @@ function EquipmentSection() {
           >
             <div className="col-span-2">#</div>
             <div className="col-span-2">Kuvat</div>
-            <div className="col-span-4">Kuvaus</div>
-            <div className="col-span-2">Hinta</div>
+            <div className="col-span-3">Kuvaus</div>
+            <div className="col-span-2">Kategoria</div>
+            <div className="col-span-1">Hinta</div>
             <div className="col-span-2 text-right">Toiminnot</div>
           </div>
           {items.map((item, idx) => (
@@ -712,14 +934,27 @@ function EquipmentSection() {
                   </div>
                 )}
               </div>
-              <div className="col-span-4 text-white line-clamp-1 text-xs">
+              <div className="col-span-3 text-white line-clamp-1 text-xs">
                 {item.description}
               </div>
+              <div className="col-span-2">
+                <span
+                  className="text-xs px-2 py-0.5 rounded-full"
+                  style={{
+                    background: "oklch(0.65 0.18 40 / 0.15)",
+                    color: "oklch(0.82 0.14 40)",
+                    border: "1px solid oklch(0.65 0.18 40 / 0.3)",
+                  }}
+                >
+                  {localStorage.getItem(`hf_item_category_${item.id}`) ??
+                    DEFAULT_CATEGORY}
+                </span>
+              </div>
               <div
-                className="col-span-2 font-bold"
+                className="col-span-1 font-bold text-xs"
                 style={{ color: "oklch(0.65 0.18 40)" }}
               >
-                {item.price} €
+                {item.price}€
               </div>
               <div className="col-span-2 flex gap-1 justify-end">
                 <Button
@@ -756,7 +991,170 @@ function EquipmentSection() {
   );
 }
 
+const ADMIN_PIN_KEY = "admin_pin";
+const ADMIN_SESSION_KEY = "admin_pin_unlocked";
+const DEFAULT_PIN = "1234";
+
+function getStoredPin(): string {
+  return localStorage.getItem(ADMIN_PIN_KEY) ?? DEFAULT_PIN;
+}
+
+function PinScreen({ onUnlock }: { onUnlock: () => void }) {
+  const [pin, setPin] = useState("");
+  const [error, setError] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pin === getStoredPin()) {
+      sessionStorage.setItem(ADMIN_SESSION_KEY, "1");
+      onUnlock();
+    } else {
+      setError(true);
+      setPin("");
+    }
+  };
+
+  return (
+    <div
+      className="min-h-screen flex flex-col items-center justify-center"
+      style={{ background: "oklch(0.20 0.055 240)" }}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="p-8 rounded-xl shadow-2xl w-full max-w-xs"
+        style={{
+          background: "oklch(0.25 0.055 240)",
+          border: "1px solid oklch(0.35 0.06 240)",
+        }}
+      >
+        <h2 className="text-xl font-bold text-white text-center mb-1 tracking-wider uppercase">
+          Admin-paneeli
+        </h2>
+        <p
+          className="text-center text-sm mb-6"
+          style={{ color: "oklch(0.65 0.05 240)" }}
+        >
+          Syötä PIN-koodi
+        </p>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <Input
+            type="password"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={8}
+            value={pin}
+            onChange={(e) => {
+              setPin(e.target.value);
+              setError(false);
+            }}
+            placeholder="••••"
+            className="text-center text-2xl tracking-widest"
+            autoFocus
+          />
+          {error && (
+            <p className="text-red-400 text-sm text-center">Väärä PIN-koodi</p>
+          )}
+          <Button
+            type="submit"
+            className="w-full"
+            style={{ background: "oklch(0.55 0.18 40)" }}
+          >
+            Kirjaudu
+          </Button>
+        </form>
+      </motion.div>
+    </div>
+  );
+}
+
+function ChangePinSection() {
+  const [currentPin, setCurrentPin] = useState("");
+  const [newPin, setNewPin] = useState("");
+  const [confirmPin, setConfirmPin] = useState("");
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (currentPin !== getStoredPin()) {
+      toast.error("Nykyinen PIN-koodi on väärä");
+      return;
+    }
+    if (newPin.length < 4) {
+      toast.error("PIN-koodin on oltava vähintään 4 merkkiä");
+      return;
+    }
+    if (newPin !== confirmPin) {
+      toast.error("Uudet PIN-koodit eivät täsmää");
+      return;
+    }
+    localStorage.setItem(ADMIN_PIN_KEY, newPin);
+    setCurrentPin("");
+    setNewPin("");
+    setConfirmPin("");
+    toast.success("PIN-koodi vaihdettu");
+  };
+
+  return (
+    <section
+      className="mb-10 p-6 rounded-xl"
+      style={{
+        background: "oklch(0.25 0.055 240)",
+        border: "1px solid oklch(0.35 0.06 240)",
+      }}
+    >
+      <h2 className="text-lg font-bold text-white uppercase tracking-wider mb-4">
+        Vaihda PIN-koodi
+      </h2>
+      <form onSubmit={handleSave} className="flex flex-col gap-3 max-w-xs">
+        <div>
+          <Label className="text-gray-300 text-sm mb-1 block">
+            Nykyinen PIN
+          </Label>
+          <Input
+            type="password"
+            value={currentPin}
+            onChange={(e) => setCurrentPin(e.target.value)}
+            placeholder="••••"
+          />
+        </div>
+        <div>
+          <Label className="text-gray-300 text-sm mb-1 block">Uusi PIN</Label>
+          <Input
+            type="password"
+            value={newPin}
+            onChange={(e) => setNewPin(e.target.value)}
+            placeholder="••••"
+          />
+        </div>
+        <div>
+          <Label className="text-gray-300 text-sm mb-1 block">
+            Vahvista uusi PIN
+          </Label>
+          <Input
+            type="password"
+            value={confirmPin}
+            onChange={(e) => setConfirmPin(e.target.value)}
+            placeholder="••••"
+          />
+        </div>
+        <Button type="submit" style={{ background: "oklch(0.55 0.18 40)" }}>
+          Vaihda PIN
+        </Button>
+      </form>
+    </section>
+  );
+}
+
 export default function AdminPage() {
+  const [unlocked, setUnlocked] = useState(
+    () => sessionStorage.getItem(ADMIN_SESSION_KEY) === "1",
+  );
+
+  if (!unlocked) {
+    return <PinScreen onUnlock={() => setUnlocked(true)} />;
+  }
+
   return (
     <div
       className="min-h-screen flex flex-col"
@@ -776,7 +1174,9 @@ export default function AdminPage() {
             className="w-16 h-0.5 mb-8 rounded"
             style={{ background: "oklch(0.65 0.18 40)" }}
           />
+          <ChangePinSection />
           <HomepageContentSection />
+          <CategoriesSection />
           <EquipmentSection />
         </motion.div>
       </main>

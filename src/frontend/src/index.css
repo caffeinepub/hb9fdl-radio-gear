@@ -63,5 +63,19 @@
   body {
     @apply bg-background text-foreground;
     font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* Prevent 300ms tap delay on iOS */
+  button,
+  a,
+  [role="button"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Ensure images never overflow */
+  img {
+    max-width: 100%;
   }
 }

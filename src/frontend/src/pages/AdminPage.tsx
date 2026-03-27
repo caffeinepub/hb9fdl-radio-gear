@@ -119,7 +119,7 @@ function HomepageContentSection() {
           </Label>
           <button
             type="button"
-            className="w-40 h-40 rounded-xl overflow-hidden cursor-pointer relative group"
+            className="w-32 sm:w-40 h-32 sm:h-40 rounded-xl overflow-hidden cursor-pointer relative group"
             style={{
               border: "2px dashed oklch(0.72 0.12 185 / 0.5)",
               background: "oklch(0.26 0.05 240)",
@@ -211,7 +211,7 @@ function HomepageContentSection() {
         <div className="flex items-start gap-4">
           <button
             type="button"
-            className="w-40 h-32 rounded-xl overflow-hidden cursor-pointer relative group flex-shrink-0"
+            className="w-32 sm:w-40 h-28 sm:h-32 rounded-xl overflow-hidden cursor-pointer relative group flex-shrink-0"
             style={{
               border: "2px dashed oklch(0.72 0.12 185 / 0.5)",
               background: "oklch(0.26 0.05 240)",
@@ -336,7 +336,9 @@ function CategoriesSection() {
                 className="w-2 h-2 rounded-full flex-shrink-0"
                 style={{ background: "oklch(0.65 0.18 40)" }}
               />
-              <span className="text-sm text-white">{cat}</span>
+              <span className="text-sm text-white truncate min-w-0 flex-1">
+                {cat}
+              </span>
               {cat === DEFAULT_CATEGORY && (
                 <span
                   className="text-xs px-2 py-0.5 rounded-full"
@@ -860,131 +862,136 @@ function EquipmentSection() {
         </div>
       ) : (
         <div
-          className="rounded-xl overflow-hidden"
-          style={{ border: "1px solid oklch(0.30 0.04 240)" }}
+          className="overflow-x-auto -mx-1 px-1 rounded-xl"
+          style={{ WebkitOverflowScrolling: "touch" }}
         >
           <div
-            className="grid grid-cols-12 gap-2 px-4 py-3 text-xs font-bold uppercase tracking-wider"
-            style={{
-              background: "oklch(0.18 0.05 240)",
-              color: "oklch(0.72 0.12 185)",
-            }}
+            className="rounded-xl overflow-hidden min-w-[480px]"
+            style={{ border: "1px solid oklch(0.30 0.04 240)" }}
           >
-            <div className="col-span-2">#</div>
-            <div className="col-span-2">Kuvat</div>
-            <div className="col-span-3">Kuvaus</div>
-            <div className="col-span-2">Kategoria</div>
-            <div className="col-span-1">Hinta</div>
-            <div className="col-span-2 text-right">Toiminnot</div>
-          </div>
-          {items.map((item, idx) => (
             <div
-              key={String(item.id)}
-              className="grid grid-cols-12 gap-2 px-4 py-3 items-center text-sm"
+              className="grid grid-cols-12 gap-2 px-4 py-3 text-xs font-bold uppercase tracking-wider"
               style={{
-                background:
-                  idx % 2 === 0
-                    ? "oklch(0.24 0.05 240)"
-                    : "oklch(0.22 0.05 240)",
-                borderTop: "1px solid oklch(0.28 0.04 240)",
+                background: "oklch(0.18 0.05 240)",
+                color: "oklch(0.72 0.12 185)",
               }}
-              data-ocid={`equipment.item.${idx + 1}`}
             >
-              <div className="col-span-2">
-                <span
-                  className="font-mono text-xs"
-                  style={{ color: "oklch(0.72 0.12 185)" }}
-                >
-                  {item.itemNumber}
-                </span>
-              </div>
-              <div className="col-span-2 flex gap-1 flex-wrap">
-                {item.mainPhoto ? (
-                  <img
-                    src={item.mainPhoto.getDirectURL()}
-                    alt=""
-                    className="w-10 h-10 rounded object-cover"
-                    title="Pääkuva"
-                    style={{ border: "2px solid oklch(0.65 0.18 40 / 0.6)" }}
-                  />
-                ) : (
-                  <div
-                    className="w-10 h-10 rounded"
-                    style={{ background: "oklch(0.28 0.05 240)" }}
-                  />
-                )}
-                {item.subPhotos.slice(0, 2).map((sp, si) => (
-                  <img
-                    key={sp.getDirectURL()}
-                    src={sp.getDirectURL()}
-                    alt={`Lisäkuva ${si + 1}`}
-                    className="w-10 h-10 rounded object-cover"
-                    style={{ border: "1px solid oklch(0.35 0.04 240)" }}
-                  />
-                ))}
-                {item.subPhotos.length > 2 && (
-                  <div
-                    className="w-10 h-10 rounded flex items-center justify-center text-xs font-bold"
+              <div className="col-span-2">#</div>
+              <div className="col-span-2">Kuvat</div>
+              <div className="col-span-3">Kuvaus</div>
+              <div className="col-span-2">Kategoria</div>
+              <div className="col-span-1">Hinta</div>
+              <div className="col-span-2 text-right">Toiminnot</div>
+            </div>
+            {items.map((item, idx) => (
+              <div
+                key={String(item.id)}
+                className="grid grid-cols-12 gap-2 px-4 py-3 items-center text-sm"
+                style={{
+                  background:
+                    idx % 2 === 0
+                      ? "oklch(0.24 0.05 240)"
+                      : "oklch(0.22 0.05 240)",
+                  borderTop: "1px solid oklch(0.28 0.04 240)",
+                }}
+                data-ocid={`equipment.item.${idx + 1}`}
+              >
+                <div className="col-span-2">
+                  <span
+                    className="font-mono text-xs"
+                    style={{ color: "oklch(0.72 0.12 185)" }}
+                  >
+                    {item.itemNumber}
+                  </span>
+                </div>
+                <div className="col-span-2 flex gap-1 flex-wrap">
+                  {item.mainPhoto ? (
+                    <img
+                      src={item.mainPhoto.getDirectURL()}
+                      alt=""
+                      className="w-10 h-10 rounded object-cover"
+                      title="Pääkuva"
+                      style={{ border: "2px solid oklch(0.65 0.18 40 / 0.6)" }}
+                    />
+                  ) : (
+                    <div
+                      className="w-10 h-10 rounded"
+                      style={{ background: "oklch(0.28 0.05 240)" }}
+                    />
+                  )}
+                  {item.subPhotos.slice(0, 2).map((sp, si) => (
+                    <img
+                      key={sp.getDirectURL()}
+                      src={sp.getDirectURL()}
+                      alt={`Lisäkuva ${si + 1}`}
+                      className="w-10 h-10 rounded object-cover"
+                      style={{ border: "1px solid oklch(0.35 0.04 240)" }}
+                    />
+                  ))}
+                  {item.subPhotos.length > 2 && (
+                    <div
+                      className="w-10 h-10 rounded flex items-center justify-center text-xs font-bold"
+                      style={{
+                        background: "oklch(0.28 0.05 240)",
+                        color: "oklch(0.72 0.12 185)",
+                      }}
+                    >
+                      +{item.subPhotos.length - 2}
+                    </div>
+                  )}
+                </div>
+                <div className="col-span-3 text-white line-clamp-1 text-xs">
+                  {item.description}
+                </div>
+                <div className="col-span-2">
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full"
                     style={{
-                      background: "oklch(0.28 0.05 240)",
-                      color: "oklch(0.72 0.12 185)",
+                      background: "oklch(0.65 0.18 40 / 0.15)",
+                      color: "oklch(0.82 0.14 40)",
+                      border: "1px solid oklch(0.65 0.18 40 / 0.3)",
                     }}
                   >
-                    +{item.subPhotos.length - 2}
-                  </div>
-                )}
-              </div>
-              <div className="col-span-3 text-white line-clamp-1 text-xs">
-                {item.description}
-              </div>
-              <div className="col-span-2">
-                <span
-                  className="text-xs px-2 py-0.5 rounded-full"
-                  style={{
-                    background: "oklch(0.65 0.18 40 / 0.15)",
-                    color: "oklch(0.82 0.14 40)",
-                    border: "1px solid oklch(0.65 0.18 40 / 0.3)",
-                  }}
+                    {localStorage.getItem(`hf_item_category_${item.id}`) ??
+                      DEFAULT_CATEGORY}
+                  </span>
+                </div>
+                <div
+                  className="col-span-1 font-bold text-xs"
+                  style={{ color: "oklch(0.65 0.18 40)" }}
                 >
-                  {localStorage.getItem(`hf_item_category_${item.id}`) ??
-                    DEFAULT_CATEGORY}
-                </span>
+                  {item.price}€
+                </div>
+                <div className="col-span-2 flex gap-1 justify-end">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 w-7 p-0"
+                    onClick={() => openEdit(item)}
+                    data-ocid={`equipment.edit_button.${idx + 1}`}
+                  >
+                    <Pencil
+                      className="w-3 h-3"
+                      style={{ color: "oklch(0.72 0.12 185)" }}
+                    />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 w-7 p-0"
+                    onClick={() => handleDelete(item.id)}
+                    disabled={isDeleting}
+                    data-ocid={`equipment.delete_button.${idx + 1}`}
+                  >
+                    <Trash2
+                      className="w-3 h-3"
+                      style={{ color: "oklch(0.577 0.245 27.325)" }}
+                    />
+                  </Button>
+                </div>
               </div>
-              <div
-                className="col-span-1 font-bold text-xs"
-                style={{ color: "oklch(0.65 0.18 40)" }}
-              >
-                {item.price}€
-              </div>
-              <div className="col-span-2 flex gap-1 justify-end">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 w-7 p-0"
-                  onClick={() => openEdit(item)}
-                  data-ocid={`equipment.edit_button.${idx + 1}`}
-                >
-                  <Pencil
-                    className="w-3 h-3"
-                    style={{ color: "oklch(0.72 0.12 185)" }}
-                  />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 w-7 p-0"
-                  onClick={() => handleDelete(item.id)}
-                  disabled={isDeleting}
-                  data-ocid={`equipment.delete_button.${idx + 1}`}
-                >
-                  <Trash2
-                    className="w-3 h-3"
-                    style={{ color: "oklch(0.577 0.245 27.325)" }}
-                  />
-                </Button>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
     </section>
@@ -1161,7 +1168,7 @@ export default function AdminPage() {
       style={{ background: "oklch(0.20 0.055 240)" }}
     >
       <Header />
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-10">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-3 sm:px-4 py-6 sm:py-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

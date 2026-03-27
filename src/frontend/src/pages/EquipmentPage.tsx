@@ -64,10 +64,12 @@ function Lightbox({ src, onClose }: { src: string; onClose: () => void }) {
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center text-white text-xl font-bold transition-colors"
+          className="absolute top-4 right-4 w-12 h-12 rounded-full flex items-center justify-center text-white text-2xl font-bold transition-colors"
           style={{
             background: "oklch(0.28 0.04 240 / 0.9)",
             border: "1px solid oklch(0.45 0.06 240)",
+            minWidth: "48px",
+            minHeight: "48px",
           }}
           aria-label="Sulje"
         >
@@ -221,8 +223,11 @@ function EquipmentCard({
         {/* Sub-photo thumbnails */}
         {allThumbs.length > 1 && (
           <div
-            className="flex gap-1.5 px-3 py-2"
-            style={{ borderBottom: "1px solid oklch(0.28 0.04 240)" }}
+            className="flex gap-2 px-3 py-2 overflow-x-auto"
+            style={{
+              borderBottom: "1px solid oklch(0.28 0.04 240)",
+              scrollbarWidth: "none",
+            }}
           >
             {allThumbs.map((src, i) => (
               <button
@@ -231,8 +236,10 @@ function EquipmentCard({
                 onClick={() => setSelectedPhoto(src)}
                 className="flex-shrink-0 rounded overflow-hidden transition-all duration-150"
                 style={{
-                  width: "44px",
-                  height: "44px",
+                  width: "52px",
+                  height: "52px",
+                  minWidth: "52px",
+                  minHeight: "52px",
                   border:
                     selectedPhoto === src
                       ? "2px solid oklch(0.65 0.18 40)"
@@ -252,7 +259,7 @@ function EquipmentCard({
 
         {/* Info */}
         <div className="flex-1 p-4 flex flex-col gap-2">
-          <p className="text-white text-sm leading-relaxed flex-1">
+          <p className="text-white text-sm leading-relaxed flex-1 break-words">
             {item.description}
           </p>
           <div
@@ -297,55 +304,79 @@ export default function EquipmentPage() {
     >
       <Header />
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-12">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-3 sm:px-4 py-8 md:py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
           <h1
-            className="text-3xl md:text-4xl font-bold text-center tracking-widest uppercase mb-2"
+            className="text-2xl sm:text-3xl md:text-4xl font-bold text-center tracking-widest uppercase mb-2"
             style={{ color: "white" }}
           >
             Myytävät laitteet
           </h1>
           <div
-            className="w-20 h-1 rounded mx-auto mb-10"
+            className="w-20 h-1 rounded mx-auto mb-8 md:mb-10"
             style={{ background: "oklch(0.65 0.18 40)" }}
           />
         </motion.div>
 
-        {/* Mobile: horizontal category scroll */}
-        <div
-          className="flex md:hidden gap-2 overflow-x-auto pb-3 mb-6"
-          style={{ scrollbarWidth: "none" }}
-          data-ocid="equipment.tab"
-        >
-          {categories.map((cat) => {
-            const count = countByCategory(cat);
-            return (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setSelectedCategory(cat)}
-                className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200"
-                style={{
-                  background:
-                    selectedCategory === cat
-                      ? "oklch(0.65 0.18 40)"
-                      : "oklch(0.18 0.05 240)",
-                  color:
-                    selectedCategory === cat ? "white" : "oklch(0.72 0.12 185)",
-                  border:
-                    selectedCategory === cat
-                      ? "1px solid oklch(0.65 0.18 40)"
-                      : "1px solid oklch(0.32 0.05 240)",
-                }}
-              >
-                {cat} ({count})
-              </button>
-            );
-          })}
+        {/* Mobile: horizontal category scroll with fade edges */}
+        <div className="relative md:hidden mb-6">
+          <div
+            className="flex gap-2 overflow-x-auto pb-3"
+            style={
+              {
+                scrollbarWidth: "none",
+                WebkitOverflowScrolling: "touch",
+              } as React.CSSProperties
+            }
+            data-ocid="equipment.tab"
+          >
+            {categories.map((cat) => {
+              const count = countByCategory(cat);
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat)}
+                  className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 min-h-[44px]"
+                  style={{
+                    background:
+                      selectedCategory === cat
+                        ? "oklch(0.65 0.18 40)"
+                        : "oklch(0.18 0.05 240)",
+                    color:
+                      selectedCategory === cat
+                        ? "white"
+                        : "oklch(0.72 0.12 185)",
+                    border:
+                      selectedCategory === cat
+                        ? "1px solid oklch(0.65 0.18 40)"
+                        : "1px solid oklch(0.32 0.05 240)",
+                  }}
+                >
+                  {cat} ({count})
+                </button>
+              );
+            })}
+          </div>
+          {/* Fade edges */}
+          <div
+            className="absolute left-0 top-0 bottom-3 w-4 pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(to right, oklch(0.22 0.055 240), transparent)",
+            }}
+          />
+          <div
+            className="absolute right-0 top-0 bottom-3 w-8 pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(to left, oklch(0.22 0.055 240), transparent)",
+            }}
+          />
         </div>
 
         {/* Desktop: sidebar + grid layout */}
@@ -403,17 +434,19 @@ export default function EquipmentPage() {
                             : "3px solid transparent",
                       }}
                     >
-                      {cat}{" "}
-                      <span
-                        style={{
-                          color:
-                            selectedCategory === cat
-                              ? "oklch(0.70 0.12 40)"
-                              : "oklch(0.55 0.05 220)",
-                          fontSize: "0.75em",
-                        }}
-                      >
-                        ({count})
+                      <span className="truncate block pr-1">
+                        {cat}{" "}
+                        <span
+                          style={{
+                            color:
+                              selectedCategory === cat
+                                ? "oklch(0.70 0.12 40)"
+                                : "oklch(0.55 0.05 220)",
+                            fontSize: "0.75em",
+                          }}
+                        >
+                          ({count})
+                        </span>
                       </span>
                     </button>
                   );
@@ -426,7 +459,7 @@ export default function EquipmentPage() {
           <div className="flex-1 min-w-0">
             {isLoading ? (
               <div
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
                 data-ocid="equipment.loading_state"
               >
                 {[1, 2, 3].map((i) => (
@@ -439,7 +472,7 @@ export default function EquipmentPage() {
               </div>
             ) : !filteredItems || filteredItems.length === 0 ? (
               <div
-                className="text-center py-20"
+                className="text-center py-16 sm:py-20"
                 data-ocid="equipment.empty_state"
               >
                 <svg
@@ -474,7 +507,7 @@ export default function EquipmentPage() {
               </div>
             ) : (
               <div
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
                 data-ocid="equipment.table"
               >
                 {filteredItems.map((item, idx) => (

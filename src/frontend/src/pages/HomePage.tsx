@@ -100,7 +100,7 @@ export default function HomePage() {
 
       <section
         className="relative w-full overflow-hidden"
-        style={{ minHeight: "420px", background: "oklch(0.18 0.055 240)" }}
+        style={{ minHeight: "340px", background: "oklch(0.18 0.055 240)" }}
       >
         <RadioWavesSVG className="absolute right-0 top-0 h-full w-1/2 opacity-30" />
 
@@ -117,9 +117,9 @@ export default function HomePage() {
           ))}
         </div>
 
-        <div className="relative max-w-5xl mx-auto px-6 py-16 flex flex-col md:flex-row items-center gap-10">
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-16 flex flex-col-reverse md:flex-row items-center gap-8 md:gap-10">
           <motion.div
-            className="flex-1"
+            className="flex-1 w-full"
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.7 }}
@@ -130,21 +130,21 @@ export default function HomePage() {
             >
               Welcome to
             </p>
-            <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight mb-3">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white leading-tight mb-3 break-words">
               HB9FDL / OH6KNW
             </h1>
             <h2
-              className="text-xl md:text-2xl font-light mb-8"
+              className="text-lg md:text-2xl font-light mb-6 md:mb-8"
               style={{ color: "oklch(0.80 0.06 200)" }}
             >
               Ham Radio Equipment Sales
             </h2>
 
-            <div className="flex flex-wrap gap-3">
-              <Link to="/equipment">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link to="/equipment" className="w-full sm:w-auto">
                 <button
                   type="button"
-                  className="px-6 py-3 rounded-lg font-semibold text-sm transition-all hover:opacity-90"
+                  className="w-full sm:w-auto px-6 py-3 rounded-lg font-semibold text-sm transition-all hover:opacity-90 min-h-[48px]"
                   style={{
                     background: "oklch(0.72 0.12 185)",
                     color: "oklch(0.15 0.04 240)",
@@ -153,10 +153,10 @@ export default function HomePage() {
                   Myytävät laitteet
                 </button>
               </Link>
-              <Link to="/admin">
+              <Link to="/admin" className="w-full sm:w-auto">
                 <button
                   type="button"
-                  className="px-6 py-3 rounded-lg font-semibold text-sm transition-all hover:opacity-90"
+                  className="w-full sm:w-auto px-6 py-3 rounded-lg font-semibold text-sm transition-all hover:opacity-90 min-h-[48px]"
                   style={{ background: "oklch(0.65 0.18 40)", color: "white" }}
                 >
                   Admin
@@ -175,12 +175,12 @@ export default function HomePage() {
               <img
                 src={content.operatorPhoto.getDirectURL()}
                 alt="Operator"
-                className="w-48 h-48 md:w-64 md:h-64 rounded-full object-cover"
+                className="w-36 h-36 sm:w-48 sm:h-48 md:w-64 md:h-64 rounded-full object-cover mx-auto"
                 style={{ border: "3px solid oklch(0.72 0.12 185)" }}
               />
             ) : (
               <div
-                className="w-48 h-48 md:w-64 md:h-64 rounded-full flex flex-col items-center justify-center"
+                className="w-36 h-36 sm:w-48 sm:h-48 md:w-64 md:h-64 rounded-full flex flex-col items-center justify-center mx-auto"
                 style={{
                   border: "2px dashed oklch(0.72 0.12 185 / 0.4)",
                   background: "oklch(0.25 0.04 240)",
@@ -227,10 +227,8 @@ export default function HomePage() {
         <div className="absolute left-0 top-0 w-1/2 opacity-40">
           <WaveformSVG />
         </div>
-        <div className="relative max-w-5xl mx-auto px-6 py-12 flex flex-col md:flex-row items-center gap-10">
-          <div className="hidden md:block flex-1" />
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-8 md:py-12">
           <motion.div
-            className="flex-1"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.3 }}
@@ -273,15 +271,15 @@ export default function HomePage() {
       </section>
 
       <section
-        className="w-full py-14"
-        style={{ background: "oklch(0.28 0.07 175)", minHeight: "220px" }}
+        className="w-full py-10 md:py-14"
+        style={{ background: "oklch(0.28 0.07 175)", minHeight: "200px" }}
       >
-        <div className="max-w-5xl mx-auto px-6 flex items-center justify-center">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 flex items-center justify-center">
           {secondPhoto ? (
             <motion.img
               src={secondPhoto}
               alt="Etusivun toinen kuva"
-              className="rounded-xl object-cover"
+              className="rounded-xl object-cover w-full"
               style={{ maxHeight: "300px", maxWidth: "100%" }}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -289,7 +287,7 @@ export default function HomePage() {
             />
           ) : (
             <div
-              className="flex flex-col items-center justify-center rounded-xl px-12 py-10"
+              className="flex flex-col items-center justify-center rounded-xl px-8 sm:px-12 py-10"
               style={{
                 border: "2px dashed oklch(0.72 0.12 185 / 0.4)",
                 background: "oklch(0.25 0.06 175 / 0.3)",

@@ -32,12 +32,16 @@ export default function Header() {
           ))}
         </svg>
       </div>
-      <div className="relative max-w-5xl mx-auto px-4 h-20 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-3" data-ocid="nav.link">
+      <div className="relative max-w-5xl mx-auto px-3 sm:px-4 h-16 sm:h-20 flex items-center justify-between gap-2 min-w-0">
+        <Link
+          to="/"
+          className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink"
+          data-ocid="nav.link"
+        >
           <svg
             aria-hidden="true"
-            width="36"
-            height="36"
+            width="30"
+            height="30"
             viewBox="0 0 36 36"
             fill="none"
             className="flex-shrink-0"
@@ -97,8 +101,8 @@ export default function Header() {
               opacity="0.6"
             />
           </svg>
-          <div>
-            <div className="text-white font-bold text-base tracking-widest">
+          <div className="min-w-0">
+            <div className="text-white font-bold text-sm sm:text-base tracking-widest truncate">
               HB9FDL/OH6KNW
             </div>
             <div
@@ -110,19 +114,23 @@ export default function Header() {
           </div>
         </Link>
 
-        <nav className="flex items-center gap-2" aria-label="Main navigation">
+        <nav
+          className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0"
+          aria-label="Main navigation"
+        >
           <Link
             to="/equipment"
-            className="px-4 py-2 text-sm font-semibold rounded-md transition-colors"
+            className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-md transition-colors whitespace-nowrap min-h-[44px] flex items-center"
             style={{ background: "oklch(0.65 0.18 40)", color: "white" }}
             data-ocid="equipment.link"
           >
-            Myytävät laitteet
+            <span className="hidden sm:inline">Myytävät laitteet</span>
+            <span className="sm:hidden">Laitteet</span>
           </Link>
           {identity && isAdmin && (
             <Link
               to="/admin"
-              className="px-4 py-2 text-sm font-semibold rounded-md transition-colors"
+              className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-md transition-colors whitespace-nowrap min-h-[44px] flex items-center"
               style={{
                 background: "oklch(0.30 0.08 240)",
                 color: "oklch(0.72 0.12 185)",
